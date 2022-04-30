@@ -7,16 +7,15 @@ Stage stage = START;
 Color colors[] = {OFF, RED, BLUE, GREEN, MAGENTA, CYAN, ORANGE, WHITE};
 byte color = 0;
 
-const byte PIECE = 0x1;
-const byte LEFT = 0x2;
-const byte RIGHT = 0x4;
-const byte TOP = 0x8;
-const byte BOTTOM = 0x10;
+const byte LEFT = 0x1;
+const byte RIGHT = 0x2;
+const byte TOP = 0x4;
+const byte BOTTOM = 0x8;
 
 boolean clicked = false;
 
 bool redsTurn = true;
-byte state = 0;
+byte edgeState = 0;
 
 void setup() {
 }
@@ -24,12 +23,11 @@ void setup() {
 void loop() {
   FOREACH_FACE(f) {
     if (didValueOnFaceChange(f)) {
-      stage = getLastValueReceivedOnFace(f);
+      stage = getStage(getLastValueReceivedOnFace(f));
     }
   }
   if (buttonLongPressed()) {
     stage = INIT;
-    setValueSentOnAllFaces(stage);
   }
   switch (stage) {
     case(INIT):
@@ -42,25 +40,31 @@ void loop() {
       playLoop(REDTURN);
       break;
     case(REDWIN):
-      displayWin(MAGENTA);
-      break;
     case(BLUEWIN):
-      displayWin(CYAN);
+      displayWin(stage);
       break;
   }
   setValueSentOnAllFaces(stage);
 }
 
+byte getStage(byte value) {
+  return value;
+}
+
 void initLoop() {
   queryNeighbors();
-  displayExternal(BLUE);
-  displayInternal(OFF);
+  setupBoundary();
   clicked = false;
   if (buttonSingleClicked()) {
     displayInternal(GREEN);
     clicked = true;
     stage = REDTURN;
   }
+}
+
+void setupBoundary() {
+  displayInternal(OFF);
+  displayExternal(BLUE);
 }
 
 void playLoop(byte nextStage) {
@@ -78,7 +82,11 @@ void playLoop(byte nextStage) {
   }
 }
 
-void displayWin(Color color) {
+void displayWin(byte stage) {
+  Color color = CYAN;
+  if (stage == REDWIN) {
+    stage = MAGENTA;
+  }
   if (clicked) {
     displayInternal(color);
     clicked = false;
@@ -106,7 +114,6 @@ void updateDisplay() {
       }
   }
 }
-*/
 
 void startLoop(){
   queryNeighbors();
@@ -128,7 +135,7 @@ void startLoop(){
   stage = REDTURN;
   propagateStage();
 }
-/*
+
 void startLoop(){
   if (buttonDown()) {
     if (nbrCount == 2) {
@@ -161,14 +168,13 @@ Color stateColor(byte state) {
       return OFF;    
   }
 }
-*/
 
 void propagateStage() {
   FOREACH_FACE(f) {
     setValueSentOnAllFaces(stage);
   }
 }
-
+*/
 
 void queryNeighbors() {
   nbrCount = 0;
